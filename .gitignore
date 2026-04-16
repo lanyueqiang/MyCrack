@@ -1,0 +1,40 @@
+# 参考文献PDF
+参考文献/*.pdf
+
+# Office临时文件
+~$*
+
+# 旧的辅助文件
+generate_ppt.py
+pdf_content.txt
+参考文献/extract_pdf.py
+
+# Word/PPT文件
+*.docx
+*.pptx
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# 训练产物（后续）
+checkpoints/
+logs/
+runs/
+outputs/
+*.pth
+*.pt
+
+# 数据集（不上传到Git）
+data/
+
+# IDE
+.vscode/
+.idea/
+
+# 系统文件
+Thumbs.db
+.DS_Store
