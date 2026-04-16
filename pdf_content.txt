@@ -1,0 +1,647 @@
+
+--- Page 1 ---
+AutomationinConstruction162(2024)105375
+Contents lists available at ScienceDirect
+Automation in Construction
+journal homepage: www.elsevier.com/locate/autcon
+Network for robust and high-accuracy pavement crack segmentation
+Yingchao Zhang, Cheng Liu*
+Department of Systems Engineering, City University of Hong Kong, Hong Kong
+A R T I C L E I N F O A B S T R A C T
+Keywords: Timely segmentation and repair of pavement cracks significantly impacts both traffic safety and the service life of
+Pavement crack segmentation the roadway. However, current crack segmentation algorithms are limited in terms of imprecise segmentation
+Convolutional neural network and poor robustness. To overcome current limitations, this study proposes a pavement crack segmentation al-
+Features fusion
+gorithm called MixCrackNet. MixCrackNet leverages deformable convolution, weighted loss functions, an effi-
+Attention block
+cient multi-scale attention module, and the Mix Structure to identify pavement cracks. Three datasets were used
+Deformable convolution
+to train and validate the effectiveness of MixCrackNet. By comparing with classical semantic segmentation
+networks, the results demonstrate that MixCrackNet outperforms all the other models in crack segmentation.
+Furthermore, MixCrackNet not only exhibits exceptional performance across all three datasets, but also achieves
+decent results in untrained dataset. These results indicate that MixCrackNet is not only highly accurate but also
+robust, thereby promoting the application of semantic crack segmentation technology in pavement condition
+detection.
+1. Introduction can be determined. However, these sensors have limited usage scenarios
+and cannot be used to directly identify the pavement cracks with high
+It is widely acknowledged that interconnected pavements signifi- accuracy. In contrast, cameras are commonly employed for pavement
+cantly contribute to human convenience and drive the economic growth. damage detection. The images of pavement surface damage provide
+However, over time, road facilities gradually deteriorate, forming observable information such as crack shape and location. Image-based
+numerous pavement cracks. These cracks can greatly reduce the service pavement crack detection methods can be categorized into two types:
+life of the pavement and pose negative impact on the driving experience. digital image processing [3–5] and deep learning [6–8].
+Detecting and promptly reporting damage to the relevant management Digital image processing encompasses edge detection and thresh-
+department during the early stages of pavement infrastructure deterio- olding algorithms, which can be practical solutions for detecting crack
+ration can minimize losses. To realize this, high-precision methods for edges. By analyzing the images, we can extract edge information to
+detecting pavement cracks must be used to collect information about achieve automatic crack detection. Zou et al. [9] proposed CrackTree, a
+cracks on the highway surface. method that utilizes minimum spanning trees (MST) for detecting crack
+Currently, manual detection is the commonly employed crack in- curves, yielding favorable results. Zhang and Yuen [10] proposed a
+spection method. This method requires workers to measure and assess crack detection method that does not require GPU acceleration. This
+the road onsite. However, it is associated with significant costs and re- method achieves comparable accuracy to classical convolutional neural
+quires the closure of highways during the inspection process. Another networks through a generalized learning system based on fused features.
+approach involves using multifunctional pavement damage inspection To reduce computing time, Yamaguchi et al. [11] introduced the
+vehicles, which provides high accuracy and fast speed. However, these sequential similarity detection algorithm, which skips the calculation of
+vehicles are costly and requires extra assistance in dealing with heavy adjacent pixels. Shi et al. [12] employed integral channel features to
+workloads. Therefore, studies have focused on intelligent detection define crack tokens and utilized random structured forests as crack de-
+methods for pavement damage segmentation. tectors. Although these methods can detect complex cracks, the algo-
+Various approaches exist for detecting pavement conditions, rithms for crack analysis must be manually designed, posing a
+including using inertial measurement units (IMU) [1,2]. By analyzing significant challenge. Furthermore, due to the varying feature selection
+the motion state data captured by the IMU, the pavement travel quality of image processing techniques for different datasets, this detection
+* Corresponding author.
+E-mail address: cliu647@cityu.edu.hk (C. Liu).
+https://doi.org/10.1016/j.autcon.2024.105375
+Received 2 November 2023; Received in revised form 5 March 2024; Accepted 6 March 2024
+Availableonline20March2024
+0926-5805/©2024ElsevierB.V.Allrightsreserved.
+--- Page 2 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+method is limited in its robustness for large-scale pavement detection. PCI value of the inspected road section. Therefore, the model with fast
+With the advancement of deep learning, researchers have recognized segmentation speed but low accuracy fails to meet practical re-
+the potential of deep neural networks in detecting pavement cracks quirements. Consequently, more research has focused on achieving
+[13–15]. Initially, image classification techniques were employed to crack segmentation with high precision.
+determine the presence of cracks in images. O’Brien et al. [16] utilized Yang et al. [43] proposed a network named FPHBN, which consisted
+VGG16 and achieved 89.3% detection accuracy. Flah et al. [17] of feature pyramid and hierarchical boosting modules. Pan et al. [44]
+designed a simple convolutional network that achieved a crack classi- introduced a block named spatial-channel hierarchical network (SCHN)
+fication accuracy of 96%. Kim et al. [18] utilized a shallow convolu- to enhance the performance of VGG19, resulting in significant im-
+tional neural network for surface crack detection, trained on the Middle provements in mean intersection over union (mIoU). Qu et al. [45] in-
+East Technical University (METU) dataset. The accuracy of their tegrated multiple side output feature maps and dilated convolutions to
+approach surpassed that of traditional networks such as ResNet [19] and enhance the encoder-decoder structure, demonstrating the usefulness of
+VGG16 [20]. Despite the simplicity of these networks, they all achieved these improvements for crack segmentation.
+high accuracy. In addition to convolutional networks, other deep-learning tech-
+While determining the presence of cracks in images is essential, it is niques have been employed for crack segmentation. Mei et al. [46]
+equally crucial to obtain their location information. Object detection utilized generative adversarial networks (GAN) and connectivity maps
+techniques in deep learning offer a better solution for this task. Standard to identify crack pixels. Transformer structures [47,48] have also been
+object detection methods include YOLO v3 [21], Faster RCNN [22], and used for pixel-level crack segmentation. Guo et al. [49] introduced the
+others, which can detect target positions in an image. Zhang et al. [23] Swim-Transformer structure into crack segmentation and proposed a CT
+trained a deep convolutional neural network to detect pavement cracks, model, which achieved better results in the Crack500 [43] database.
+surpassing methods that relied on manually designed features. Simple Guo et al. [6] incorporated the original crack boundary as an additional
+yet effective convolutional networks have also been designed for crack feature into the convolutional neural network to improve crack seg-
+detection and location [24–26]. To address the issue of limited crack mentation. A novel transformer encoder module is integrated with
+data, Ma et al. [27] introduced the generative adversarial network CrackFormer-II [50] into a framework of SegNet-like encoders. And
+(GAN) for data expansion and proposed the YOLO v3-MF algorithm by through parameters compression, the inference speed is comparable to
+combining YOLO v3 with median flow. However, achieving intelligent that of the convolutional neural network while achieving high accuracy.
+crack detection with high accuracy requires more complex Liu et al. [51] proposed a semantic translation module and a position
+improvements. extraction module for semantic segmentation networks based on the
+The attention mechanism has proven to be a practical approach for concept of different image domain translation models, which led to a
+enhancing network performance by focusing on essential areas. Tse et al. substantial improvement in the accuracy of the model.
+[28] incorporated the Squeeze-and-Excitation Networks (SENet) [29] as In addition to improvements to the semantic segmentation network,
+an attention mechanism in YOLO v4‑tiny, improving its original per- some novel ideas have been used for crack segmentation. The asym-
+formance. Zhang et al. [30] proposed a multi-level attention mechanism metric Kullback-Leibler divergence was used by Wang et al. [52] to
+to enhance the accuracy of the crack detection model, building upon the improve the segmentation precision.
+YOLO v3 [21] architecture and demonstrating superior accuracy Although many scholars have done excellent work in the field of
+compared to conventional models. [31] introduced the Shuffle Attention crack segmentation, these algorithms still have many limitations.
+Mechanism [32] and Swim-Transformer Block to improve YOLO v5
+[33], resulting in significant progress in detecting pavement damage. ● The networks were not specifically optimized for cracks.
+While the crack detection algorithm has attained significant accu- ● The calculation of the PCI value depends on the accuracy of the
+racy, it fails to identify the precise location of the crack pixel within the segmentation network, but the current networks still fail to detect
+image, thereby offering no data support for computing crack’s geometric cracks with sufficient accuracy.
+features. For instance, the width and length of cracks must be obtained ● The fusion of shallow location information and deep semantic in-
+to calculate the pavement condition index (PCI). formation of cracks is inadequate.
+To achieve this requirement of more precise identification of cracks’ ● These models are rarely tested on untrained datasets.
+geometric information, the application of semantic segmentation tech-
+nology has gained popularity. Semantic segmentation enables pixel- Therefore, this study aims to propose a robust semantic segmentation
+level segmentation in image-based crack segmentation. Ye et al. [34] network for pavement crack segmentation. The MixCrackNet is intro-
+proposed a fully convolutional network called Ci-Net for detecting crack duced based on the UNet architecture [53], with ResNet50 as its back-
+pixels, which outperformed edge segmentation methods. Du et al. [35] bone. The output feature maps are fed into the efficient multi-scale
+proposed a lightweight pavement crack segmentation model based on attention module (EMA) [54] and the Mix Structure. To handle crack-
+YOLO v4‑tiny [36] to achieve quick segmentation of pavement cracks like targets, the network utilizes deformable convolution [55]. Addi-
+while improving segmentation speed. YOLO was also improved by tionally, higher weights are assigned to cracks when computing the loss
+[37,38] to perform bridge or concrete cracks segmentation. Sun et al. function. Such enhancements significantly augment the network’s ca-
+[39] integrated the multi-scale attention module with DeepLabv3+, pacity for crack feature extraction and promote the fusion of shallow
+which well improved precision of the network. Al-Huda et al. [40] crack location data with deeper semantic information. Consequently,
+initially used a classification network to locate the cracks and imple- this optimizes the accuracy and robustness of the crack segmentation
+mented knowledge transfer between the Class Activation Maps and the network. The contributions of this work can be summarized as follows.
+encoder for the segmentation of cracks. A multi-stage feature extraction
+was used by Chen et al. [41] to extract features. In their network, the ● We propose a highly accurate and robust model for pavement crack
+down sampling process existed simultaneously with feature maps of segmentation.
+different sizes and fused these maps several times. However, this work ● The EMA attention mechanism is used to encode global information
+was more computationally intensive, which slowed down inference. and aggregate parallel output feature maps.
+Zhang et al. [42] introduced small kernel convolutional layers as well as ● The Mix Structure is proposed to fuse shallow and deep features of
+parallel maximal pooling and convolutional operations into the seg- the ResNet50 network.
+mentation model, which greatly improved the inference speed of the ● We propose an upsampling module based on deformable convolution
+model. that can greatly improve crack segmentation accuracy.
+In the field of pavement maintenance, we need to get the accurate
+2
+--- Page 3 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+2. Related work 2.3. Attention mechanism
+2.1. UNet The attentional mechanism has proven to be highly effective in
+enhancing model segmentation accuracy in computer vision. It requires
+The UNet [53] architecture was initially developed to address the only a few hyperparameters to automatically prioritize important in-
+challenge of cell segmentation in medical image analysis, and it was formation in feature maps, achieved by assigning higher weight values
+named after its U-shaped network structure. However, this network has to significant features. In the SENet [29], the global pooling layer and
+superior performance in various domains beyond cell segmentation. The fully connected layer obtain the maximum value of features in each
+UNet architecture consists primarily of encoding and decoding compo- channel, and different weights are assigned to each channel based on the
+nents. In the encoding phase, the backbone network applies a down magnitude of the value. The efficient channel attention (ECA-Net) [59]
+sampling operation to the input image, generating five feature maps replaces the fully connected layers in SENet with convolutional layers,
+with different resolutions. The feature maps with higher resolutions resulting in a more lightweight network structure. While both structures
+capture the texture features of the target, while the feature maps with mentioned above focus solely on weight information in the channel
+lower resolutions emphasize the semantic information. During the direction, the convolutional block attention module (CBAM) [60] con-
+decoding phase, the model performs an up sampling operation on the siders channel and spatial attention to further improve accuracy. The
+low-resolution feature maps and concatenates them with previous fea- EMA [54] does not reduce dimensionality through convolutional or
+tures of the exact resolution to fuse features. This process produces a pooling layers. Instead, it achieves better and more efficient results than
+feature map with the same resolution as the input image, yielding the SENet, CBAM, and ECA-Net by utilizing cross-channel interaction and
+final segmentation result. The UNet’s simplicity and effective utilization fusion through parallel subnetworks. The structure of EMA is illustrated
+of feature maps at various scales contribute to its high accuracy across in Fig. 1.
+different domains.
+2.2. Segmentation network 2.4. Deformable convolution
+In addition to UNet, there are several notable semantic segmentation Standard convolution involves processing the input image using a
+networks available, including the pyramid scene parsing network sampling matrix and a kernel function. The shape of the kernel is
+(PSPNet) [56], Deeplab v3+[57], and high-resolution network (HRNet) determined by the position of the center point and its relative positions
+[58], among others. to other points, collectively known as the sampling matrix. The calcu-
+PSPNet utilizes pyramid pooling modules to incorporate global lation procedure for convolution is illustrated in Eq. (1).
+∑
+contextual information, enhancing the utilization of scene category in- y(p 0 )= ω(p i )⋅x(p 0 +p i ) (1)
+formation and mitigating false segmentation caused by appearance pi∈C
+similarity. Similarly, Deeplab v3+ employs pyramid pooling modules
+and introduces dilated convolutions in the encoder to incorporate multi- where p0 represents the central point of the input sample, pi refers to the
+scale information. sampling point in the sampling matrix, C denotes the sampling matrix,
+HRNet deviates from the conventional approach of transitioning ω(pi )indicates the weight value at position pi, x(p0 )represents the value
+from high-resolution to low-resolution feature maps and then back to of the input feature tensor at p0, and y(p0 )represents the results of the
+high-resolution feature maps. In contrast, HRNet has multiple branches convolution operation.
+with different resolution feature maps, and facilitates their interactions. However, when dealing with objects with complex shapes like
+HRNet performs exceptionally well in various tasks, including object cracks, convolutional kernels often exhibit low accuracy. To address this
+detection, semantic segmentation, and target classification. issue, Dai et al. [61] proposed the deformable convolution kernel
+(DConv). These kernels can be adjusted to shift at the sampling point,
+bringing the sampling region closer to the region of interest. The DConv
+Fig. 1. The network of EMA.
+3
+--- Page 4 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+is illustrated below: where ∣X∩Y∣ represents the intersection of X and Y, ∣X∣ and ∣Y∣ denote
+∑
+y(p 0 )= ω(p i )⋅x(p 0 +p i +△p i ) (2) the number of elements contained, respectively.
+pi∈C
+3. The proposed network
+where △pi represents the offset position.
+However, this approach can also introduce extraneous background In this study, we propose the MixCrackNet structure, which is based
+information that may interfere with detection. To address this limita- on the UNet network, to enhance the segmentation accuracy of pave-
+tion, Zhu et al. [55] proposed Deformable Convolution Version 2. In this ment cracks.
+version, each sampling point is equipped with weight information to
+ensure effective feature acquisition. The convolution process is depicted 3.1. MixCrackNet
+below:
+∑
+y(p 0 )= ω(p i )⋅x(p 0 +p i +△p i )⋅△m k (3) The structure of the MixCrackNet proposed in this study is depicted
+pi∈C in Fig. 2. The network primarily utilizes an encoding-decoding structure.
+In the encoding phase, the ResNet50 [19] is employed as the un-
+where △mk represents the weight information. derlying framework for feature extraction. The network input is
+restricted to 512 × 512 × 3 image data. The 512 × 512 denotes the
+2.5. Loss function number of pixels in the height and width of the image, and 3 denotes the
+three channels that a color image has. If images of different resolutions
+Commonly used loss functions in semantic segmentation include are inputted into the model, the resolution will be automatically
+binary cross entropy loss, focal loss, and dice loss [62]. The primary adjusted to the specified value. After applying convolution and pooling
+objective of binary cross entropy loss is to address the issue of imbal- operations to the input images, the network generates five feature maps
+anced positive and negative samples. It can be expressed as shown in Eq. with distinct resolutions. The dimensions of these maps are summarized
+(4). in Table 1. The feature map of size 2048 ×16 ×16 contains critical
+[ semantic information, while the size 64 ×256 ×256 primarily indicates
+1∑
+C loss = N t (cid:0) y t*lnp t +(1(cid:0) y t )*ln(1(cid:0) p t ) (4) l e o x c t a ra ti c o t n ed d e f t e a a il t s u . r B es y c a o r m e b f i u n l i l n y g f u e t a il t i u z r e e d , m a le p a s d o in f g d iv to er s i e m r p e r s o o v lu e t d io n m s, o t d h e e l
+accuracy.
+where N denotes the number of categories to be predicted, yt represents
+the label sample t, which is equal to 1 if positive and 0 otherwise, pt is Table 1
+the probability of sample t being predicted as positive. Dimensions the feature maps.
+Dice coefficient is employed to measure the similarity between two
+Feature Map Dimensions
+samples, and Dice loss can be obtained from the Dice coefficient. A lower
+feature 1 64 ×256 ×256
+loss value indicates a higher similarity between the samples. It can be
+feature 2 256 ×128 ×128
+defined as shown in Eq. (5). feature 3 512 ×64 ×64
+2|X∩Y| feature 4 1024 ×32 ×32
+D loss =1(cid:0) |X|+|Y| (5) feature 5 2048 ×16 ×16
+Fig. 2. MixCrackNet.
+4
+--- Page 5 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+3.2. EMA block convolution-based up sampling module can maximize the accuracy of
+crack segmentation.
+The attention mechanism enhances the network’s emphasis on
+crucial sections of the feature map while diminishing the significance of
+3.6. Loss function
+non-essential features, thereby enhancing the overall accuracy of the
+model. The feature maps generated by ResNet50 are processed through
+In crack segmentation, the ratio of crack pixels to background pixels
+the EMA module to further amplify the utilization of vital information.
+is typically around 0.05 (This data is obtained from the Crack500
+The placement of the EMA module within the network architecture is
+database). Assigning equal weights during loss calculation may cause
+illustrated in Fig. 2.
+the model to focus more on predicting background pixels and neglect
+crack pixels, reducing segmentation accuracy. For example, Fig. 5 shows
+3.3. Mix structure
+the accuracy of a U-Net with different loss weights. The network exhibits
+higher accuracy when the weight ratio is five. Thus, the loss function in
+To enhance the fusion of shallow and deep features in the model, this
+this model uses a weight ratio of five. The loss function is a combination
+study proposes the Mix Structure as shown in Fig. 3. In the Mix Struc-
+of weighted binary cross entropy and Dice loss, as shown in Eqs. (6) and
+ture, H2 =4H1, W2 =4W1, and C1 =8C2, where the dimensions denote
+(7):
+the feature map sizes in the channel, height, and width directions,
+respectively (batch size is excluded). Two feature maps of different sizes Loss=C wloss +D loss (6)
+are input to the Mix Structure. First, the height and width are adjusted to
+1∑
+match. Then, maximum pooling extracts the maximum value across C wloss = N (cid:0) [ω t*y t*lnp t +(1(cid:0) y t )*ln(1(cid:0) p t )] (7)
+each channel. Next, a dot product imposes channel attention by multi- t
+plying the resulting tensors with the feature map. Concatenating the
+feature maps along their channel dimension yields a feature map of size 4. Experimental results and analysis
+(3C2 /2)×H2 ×W2. The spatial structure is further adjusted to (3C2 /2)×
+(H2W2 ), which generates two feature maps, denoted as Pb and Pc. For 4.1. Datasets
+each element in the feature map Pb, the minimum value is subtracted
+from it to obtain a new feature map. This new feature map is then In this section, three datasets used for training are introduced, as
+subjected to a dot-multiplication operation with Pc, resulting in the shown in Fig. 6.
+feature map Pd with a structure of (3*C2 /2)*H2*W2. Finally, a convo-
+lution operation is applied to Pd, generating two feature maps of the 4.1.1. Crack500 dataset
+same size as the input. The Crack500 dataset was introduced by Yang et al. [43]. It contains
+500 high-resolution images (1500 × 2000 pixels) of cracks. Due to
+3.4. Decoder structure computational constraints, each image was divided into 16 non-
+overlapping sections, and only sections with over 1000 crack pixels
+In the decoding stage, the model up samples the high-level feature were retained. Following the protocol of [43], 1896 images were used
+maps and then fuses them with the feature maps output by ResNet50 and for training, 348 for validation, and 1124 for testing. This study focuses
+the Mix Structure. Finally, it outputs a feature map with the same res- on the Crack500 dataset because it presents a considerable challenge for
+olution as the input image for crack segmentation. crack segmentation.
+3.5. Deformable convolution 4.1.2. CrackForest dataset
+To evaluate the robustness of the model proposed in this study, we
+Previous experiments have shown that using deformable convolution employed the CrackForest Dataset (CFD) for comparison. The CFD,
+in the final stages of a network significantly improves performance [61]. introduced by [12], comprises 118 images designed explicitly for crack
+Thus, deformable convolution is also utilized in the decoding portion of segmentation. Following the methodology of previous studies [6], we
+the MixCrackNet network. However, replacing all the convolutions in divided the CFD dataset into training and validation sets using a 6:4
+the decoding part with deformable convolutions will not improve the ratio.
+segmentation accuracy. Therefore, we propose an upsampling module
+based on deformable convolutions, as shown in Fig. 4. This module in- 4.1.3. DeepCrack dataset
+cludes up sampling layers, concatenation layers, deformable convolu- The DeepCrack dataset, introduced by Liu et al. [63], is a compre-
+tional layers, and convolutional layers. The feature maps from different hensive collection of crack images encompassing different types,
+locations are first upsampled to make these feature maps equal in height including transverse, longitudinal, and alligator cracks. The dataset
+and width, then concatenated in the channel direction, and then passed comprises 527 images, each with a resolution of 544 ×384. These crack
+through the deformable convolutional layers as well as the convolu- images were captured under various environmental conditions, such as
+tional layers. Experimental results show that the deformable shadows and humidity. In this study, the DeepCrack dataset was divided
+Fig. 3. Mix structure.
+5
+--- Page 6 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+Fig. 4. Upsampling module based on deformable convolutions.
+1 ∑k TP
+mIoU= (8)
+k+1 FN+FP+TP
+0
+( )
+1 TP TN
+mPA= + (9)
+k+1 TP+FP TN+FN
+2*TP
+Dice= (10)
+2*TP+FP+FN
+where k denotes the category of segmentation, here equal to 1.
+4.3. Compared methods
+We chose the most popular algorithms in the field of semantic seg-
+mentation for comparison, including UNet [53], PSPNet [56], HRNet
+[58], and Deeplab v3+ [57]. In addition, we also selected the latest
+semantic segmentation network called STDC2-Seg75 [64]. STDC2-
+Seg75 is a novel segmentation model which extract features informa-
+tion via a multi-path structure instead of relying on the traditional
+Fig. 5. The value of Dice with different weight coefficients.
+backbone for classification. The Short-Term Dense Concatenate (STDC)
+module they proposed enabled the extraction of multi-scale features
+into training set, validation set, and test set in a ratio of 8:1:1. with minimal parameters, ensuring the model keeps its accuracy while
+performing fast inference. Since this study focused on segmentation
+4.2. Evaluation metrics accuracy, the model with the highest accuracy, referred to as STDC2-
+Seg75, was selected.
+In this study, three network evaluation metrics were utilized: Mean
+Intersection over Union (mIoU), Dice coefficient (Dice), and Mean Pixel
+4.4. Software and hardware environment
+Accuracy (mPA). To better understand these metrics, we plotted Fig. 7.
+In this figure, the blue region denotes the correct prediction of positive
+All networks in this study underwent training using the environ-
+samples (TP), while the purple region indicates incorrect prediction of
+ments specified in Table 2. In this table, batch size indicates the number
+positive samples (FN), and the green region signifies the erroneous
+of training samples employed per session, while epoch signifies 100
+prediction of negative samples (FP). The calculation of the metrics is as
+completed training sessions encompassing all samples. The term opti-
+follows:
+mizer denotes the parameter optimizer, and the min learning rate de-
+notes the minimum permissible value following the decay of the
+learning rate.
+6
+--- Page 7 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+Fig. 6. Examples of cracks.
+According to the table, ResNet50 and ResNet100 demonstrate the
+highest performance. Taking into account the number of parameters in
+the backbone, ResNet50 was selected as the final backbone network.
+4.5.2. Crack500
+Table 4 compares the results obtained by various models on the
+Crack500 database. The model proposed in this study exhibits signifi-
+cantly superior performance across three metrics: mIoU, mPA, and Dice.
+The mIoU metric assesses the overall accuracy and generalization ca-
+pabilities of the model. Our proposed model achieves a mIoU value of
+81.58%, surpassing all other models and indicating that the Mix-
+CrackNet model predicts results with a larger overlap with the ground
+truth labels, thereby exhibiting improved distinction between cracks
+and the background. The mPA metric represents the mean proportion of
+Fig. 7. The introduce to IoU. correctly classified pixels for each category. MixCrackNet achieves mPA
+values exceeding 90%, demonstrating the model’s effective background
+segmentation and accurate discrimination of cracks from the back-
+Table 2 ground. In cases where the brightness surrounding a crack is inadequate,
+Software and hardware environment for model training.
+the model may misidentify edge pixels of the crack as background,
+Item Content resulting in a lower mPA value. This study addresses this misidentifi-
+CPU Intel i9-13900K cation issue, leading to an overall improvement in the model’s mPA
+GPU NVIDIA GeForce RTX 4090 value. The Dice metric also quantifies the degree of overlap between
+Cuda 11.7 predicted and true pixels, and our proposed model consistently performs
+PyTorch 2.0.1
+well in this regard.
+Python 3.8
+Among semantic segmentation models, STDC2-Seg75 [64] achieves
+Batch size 8
+Epoch 100 the best results according to different metrics, which is mainly due to the
+Initial learning rate 1e-4 STDC structure. STDC2-Seg75 adopts multiple STDC structures to
+Min learning rate 1e-6 reduce the parameters while fusing the features several times to achieve
+Optimizer adam
+high accuracy. UNet and HRNet also perform relatively well. UNet
+performs well due to its well-structured encoding and decoding archi-
+4.5. Results and discussion tecture, simple network structure, and efficient utilization of features
+extracted from the backbone network. HRNet extracts feature maps of
+4.5.1. Backbone varying resolutions using multiple operations and achieves high accu-
+To identify an appropriate backbone, we conducted experiments racy by merging feature maps of different scales. The proposed Mix-
+using the VGG, ResNet18, ResNet32, ResNet50, and ResNet100. All CrackNet in this study combines the strengths of the networks
+parameters were held constant except for the backbone. The Dice coef-
+ficient was employed as an evaluation index. The experimental out-
+comes are listed in Table 3. Table 4
+Results comparison on Crack500 database.
+Model mIoU (%) Dice (%) mPA (%)
+Table 3 UNet [53] 77.79 76.75 85.90
+Comparison on different backbone. Deeplab v3+[57] 75.90 73.44 82.65
+PSPNet [56] 75.56 69.80 80.54
+Backbone Dice (%)
+HRNet [58] 76.89 74.94 84.04
+VGG [20] 76.07 STDC2-Seg75 [64] 79.25 78.34 87.47
+ResNet18 [19] 76.13 Efficient Net [65] – 77.50 –
+ResNet32 [19] 76.45 KTCAM [40] 74.30 75.40 –
+ResNet50 [19] 76.75 CrackFuse [66] – 78.10 –
+ResNet100 [19] 76.76 Ours 81.58 79.39 90.50
+7
+--- Page 8 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+mentioned above by adopting UNet’s network structure and enhancing highlighted by the red boxes in Fig. 8, it can be found that the seg-
+the fusion of different feature maps. This operation contributes to Mix- mentation results are closer to the ground truth, especially in terms of
+CrackNet achieving the best results on this database. The performance of small crack prediction. In addition, the predicted cracks show a higher
+MixCrackNet was also compared to other state-of-the-art models in the level of continuity.
+last two years, as shown in Table 4. These models can be classified into
+two groups: CNN structures and Transformer structures (e.g., Crack- 4.5.3. CrackForest dataset
+Fuse). The performance of our CNN-based MixCrackNet stay optimal. To further demonstrate the accuracy of the MixCrackNet network,
+The segmentation results for each model are presented in Fig. 8. The
+orange portion represents the ground truth obtained from human la-
+beling. In contrast, the blue portion illustrates the segmentation out- Table 5
+comes achieved by our proposed model. Additionally, we showcase the Results comparison on CFD.
+segmentation results obtained from models such as UNet and HRNet. As
+Model mIoU (%) Dice (%) mPA (%)
+shown in the figures, it is observed that for the subgraph (c), which is
+UNet [53] 78.24 72.86 85.15
+comparatively easier to segment, most models demonstrate excellent
+Deeplab v3+[57] 73.44 68.51 75.25
+performance. However, in terms of specific details, MixCrackNet ex-
+PSPNet [56] 59.14 32.95 61.35
+hibits the most accurate segmentation results. In the case of subgraphs HRNet [58] 77.36 71.47 85.04
+(a) and (d), which are more challenging to detect, models like UNet can STDC2-Seg75 [64] 82.28 77.34 89.83
+predict the overall contours of the cracks; nevertheless, they struggle to W-segnet [67] 70.19 79.42 79.88
+MST-Net [65] 78.50 73.30 –
+identify small cracks adjacent to the larger ones. In contrast, our pro- HACNet-D [68] 78.50 71.00 –
+posed MixCrackNet successfully predicts small cracks and achieves re- FFEDN [69] – 70.07 83.08
+sults that closely resemble the ground truth. By comparing the regions Ours 84.55 82.15 93.86
+Fig. 8. The segmentation results for each model on Crack500.
+8
+--- Page 9 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+this study also trained on the CrackForest dataset, as shown in Table 5. Focusing the loss function on pixels containing cracks can also
+In the CFD, MixCrackNet achieves the best results, with the Dice score improve the baseline model’s accuracy, as seen in Table 7. Since back-
+maintaining around 80%, which is consistent with its performance on ground pixels far outnumber crack pixels without a weighted loss
+Crack500. PSPNet performs the worst on this dataset. Due to the large function, the model’s loss reduction would be primarily driven by
+number of pooling operations implemented during down sampling, background pixels. However, this approach could be more beneficial for
+critical crack characteristics are lost. This process results in poor seg- optimizing crack segmentation accuracy.
+mentation of crack pixels despite fusing feature maps of varying The Mix Structure aims to merge feature maps of varying scales,
+resolutions. integrating shallow location information with more profound semantic
+Meanwhile, Deeplab v3+ also utilizes pyramid pooling for down knowledge. The shallow location information is the crack location in-
+sampling. Table 5 indicates that DeepLab v3+’s accuracy is inferior to formation under large size feature map, and the deep semantic infor-
+UNet and HRNet. This indicates that for crack segmentation, imple- mation is the characteristics of the crack in the small size feature map.
+menting too many pooling operations leads to the loss of important This process bolsters semantics in shallow features and location in
+crack information, reducing the overall model accuracy. As shown in deeper features. Therefore, the Mix Structure can significantly enhance
+Tables 4 and 5, MixCrackNet achieves the most significant improvement the model’s performance, with its improvement to the baseline being
+in mPA, demonstrating its ability to classify cracks and backgrounds most apparent, as shown in Table 7.
+accurately. Notably, W-SegNet’s [67] high Dice score is attributed to Combining all modules forms MixCrackNet, whose mIoU improves
+undergoing multiple feature fusion processes, highlighting feature fu- from 77.79% to 81.58%, and mPA improves from 85.90% to 92.50%,
+sion’s effectiveness in capturing crack features. In addition, STDC2- indicating that all module additions effectively enhance the model’s
+Seg75 [64] also performs well in the CFD, due to its specially accuracy.
+designed feature extraction module. MixCrackNet not only uses atten- The imposition of each module will inevitably reduce the inference
+tion mechanisms to enhance critical feature extraction but also applies speed of the network, so the effect of each module on the inference speed
+the Mix Structure to fuse feature maps at different resolutions, achieving was also investigated in the ablation test. FPS indicates the number of
+the best performance on CFD. images the model can process per second. Since the application of the
+weighted loss function is not a structural improvement and no additional
+4.5.4. DeepCrack parameters are added, there is no effect on the FPS value. Mix structure
+Table 6 compares MixCrackNet with classical semantic segmentation has the greatest effect on the FPS, but since most of the commonly used
+models on the DeepCrack dataset. The images in this dataset are more cameras are 30 FPS, the network proposed in this study can still meet the
+detectable than in Crack500 and CFD, resulting in higher accuracy real-time requirements.
+across all models. MixCrackNet remains the best-performing model.
+DeepLab v3+and PSPNet, which utilize more pooling operations, ach- 5. Conclusions
+ieve lower accuracy. MixCrackNet’s excellent performance on all three
+datasets sufficiently demonstrates its strong robustness for crack seg- This paper proposed MixCrackNet, a crack segmentation model
+mentation tasks. designed to improve the accuracy in current pavement crack identifi-
+cation approaches. MixCrackNet incorporated deformable convolution,
+the EMA attention mechanism, a weighted loss function, and the Mix
+4.6. Segmentation results on other datasets
+Structure proposed in this study. Experiment results on the Crack500,
+CFD, and DeepCrack datasets demonstrated MixCrackNet’s effectiveness
+To test the robustness of MixCrackNet, the model trained on the
+and robustness. By comparing to results from classical semantic seg-
+Crack500 was chosen to detect images in other datasets. The results can
+mentation methods and models from related works, MixCrackNet ach-
+be shown in Fig. 9. The comparison of the predicted results with real
+ieved superior performance in terms of mIoU, mPA, and Dice scores.
+results shows that MixCrackNet has strong robustness. Similar results
+Ablation study results further validated our model performance. Of the
+close to the ground truth can be obtained by applying the trained model
+modules, Mix Structure enhanced the model by increasing mPA by
+to other datasets.
+5.09% over the baseline. Overall, MixCrackNet improved the baseline’s
+mIoU by 3.79%, Dice score by 2.64%, and mPA by 6.60%.
+4.7. Ablation experiment In the future, we plan to collect crack data in challenging environ-
+ments (e.g., low-light, and wet environment) and create a segmented
+Ablation experiments were conducted on Crack500 to demonstrate dataset for further research. In addition, our research goals will not be
+the effectiveness of techniques employed in MixCrackNet. As shown in limited to pavement cracks, but will also focus on potholes, ruts, and so
+Table 7, the use of deformable convolutional kernels improved the ac- on. We also intend to apply the segmentation algorithm for real-world
+curacy of the baseline model. Completely covering cracks requires a damage segment to improve the efficiency of pavement inspection.
+huge receptive field. In contrast, deformable convolution adds offset Expanded and applied appropriately, MixCrackNet has the potential to
+parameters to traditional convolutional kernels to keep the receptive advance both cracks segmentation research and practical pavement
+field as close as possible to crack shapes while avoiding redundant management systems.
+features, thus enhancing model accuracy.
+The EMA module splits feature maps and fuses cross-channel features CRediT authorship contribution statement
+to leverage essential characteristics. With EMA’s assistance, the baseline
+model achieved improved performance on Crack500. Yingchao Zhang: Writing – review & editing, Writing – original
+draft, Visualization, Validation, Software, Methodology, Investigation,
+Table 6 Formal analysis, Data curation, Conceptualization. Cheng Liu: Writing –
+Results comparison on DeepCrack. review & editing, Writing – original draft, Supervision, Resources,
+Model mIoU (%) Dice (%) mPA (%) Project administration, Methodology, Investigation, Funding acquisi-
+tion, Conceptualization.
+UNet [53] 87.76 86.72 93.53
+Deeplab v3+[57] 85.79 84.18 90.08
+PSPNet [56] 77.72 72.77 82.51 Declaration of competing interest
+HRNet [58] 87.91 86.85 92.39
+Ours 89.01 87.87 96.07
+The authors declare that they have no known competing financial
+9
+--- Page 10 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+Fig. 9. The segmentation results on other datasets.
+[7] Y. Yu, H. Guan, D. Li, Y. Zhang, S. Jin, C. Yu, Ccapfpn: a context-augmented
+Table 7 capsule feature pyramid network for pavement crack detection, IEEE Trans. Intell.
+Results of ablation experiment. Transp. Syst. 23 (2020) 3324–3335, https://doi.org/10.1109/TITS.2020.3035663.
+[8] J. Fang, C. Yang, Y. Shi, N. Wang, Y. Zhao, External attention based TransUNet and
+mIoU (%) Dice (%) mPA (%) FPS label expansion strategy for crack detection, IEEE Trans. Intell. Transp. Syst. 23
+(2022) 19054–19063, https://doi.org/10.1109/TITS.2022.3154407.
+Baseline 77.79 76.75 85.90 65
+B B a a se se li l n in e e + + D E C M on A v 8 8 0 0 . . 1 5 6 7 7 7 7 7 . . 1 6 2 9 8 8 7 7 . . 0 4 5 6 5 5 7 9 [9] Q pa . v Z e o m u e , n Y t . i C m a a o g , e Q s, . L P i a , t Q te . r n M R ao e , c o S g . n W . a L n e g tt , . C 3 r 3 a c ( k 2 t 0 r 1 ee 2 : ) a 2 u 2 t 7 om –2 a 3 t 8 ic , c h r t a tp ck s: / d / e d te o c i. t o io rg n / f rom
+10.1016/j.patrec.2011.11.004.
+Baseline+weight_loss 80.53 77.65 88.35 65 [10] Y. Zhang, K.-V. Yuen, Crack detection using fusion features-based broad learning
+Baseline+Mix Structure 80.38 78.07 90.99 51 system and image processing, Comput. Aided Civ. Inf. Eng. 36 (2021) 1568–1584,
+Baseline +All 81.58 79.39 92.50 48 https://doi.org/10.1111/mice.12753.
+[11] T. Yamaguchi, S. Nakamura, S. Hashimoto, An efficient crack detection method
+using percolation-based image processing, in: IEEE Conference on Industrial
+interests or personal relationships that could have appeared to influence Electronics and Applications, IEEE, 2008, pp. 1875–1880, https://doi.org/
+10.1109/ICIEA.2008.4582845.
+the work reported in this paper.
+[12] Y. Shi, L. Cui, Z. Qi, F. Meng, Z. Chen, Automatic road crack detection using
+random structured forests, IEEE Trans. Intell. Transp. Syst. 17 (2016) 3434–3445,
+Data availability https://doi.org/10.1109/TITS.2016. 2552248.
+[13] H. Maeda, Y. Sekimoto, T. Seto, T. Kashiyama, H. Omata, Road damage detection
+and classification using deep neural networks with smartphone images, Comput.
+Data will be made available on request. Aided Civ. Inf. Eng. 33 (2018) 1127–1141, https://doi.org/10.1111/mice.12387.
+[14] A. Alfarrarjeh, D. Trivedi, S.H. Kim, C. Shahabi, A deep learning approach for road
+Acknowledgments damage detection from smartphone images, in: IEEE International Conference on
+Big Data (Big Data), IEEE, 2018, pp. 5201–5204, https://doi.org/10.1109/
+BigData.2018.8621899.
+The authors would like to acknowledge the financial support by the [15] Y.O. Ouma, M. Hahn, Pothole detection on asphalt pavements from 2d-colour
+New Faculty Start-up Fund from City University of Hong Kong under pothole images using fuzzy c-means clustering and morphological reconstruction,
+Autom. Constr. 83 (2017) 196–211, https://doi.org/10.1016/j.
+Grant No. 9610612.
+autcon.2017.08.017.
+[16] D. O’Brien, J.A. Osborne, E. Perez-Duenas, R. Cunningham, Z. Li, Automated crack
+References classification for the CERN underground tunnel infrastructure using deep learning,
+Tunn. Undergr. Space Technol. 131 (2023) 104668, https://doi.org/10.1016/j.
+tust.2022.104668.
+[1] Y. Zhang, Z. Ma, X. Song, J. Wu, S. Liu, X. Chen, X. Guo, Road surface defects
+[17] M. Flah, A.R. Suleiman, M.L. Nehdi, Classification and quantification of cracks in
+detection based on imu sensor, IEEE Sensors J. 22 (2022) 2711–2721, https://doi.
+concrete structures using deep learning image-based techniques, Cem. Concr.
+org/10.1109/JSEN.2021.3135388.
+Compos. 114 (2020) 103781, https://doi.org/10.1016/j.
+[2] A. Babu, D. Gerber, S.V. Baumgartner, G. Krieger, Road surface roughness
+cemconcomp.2020.103781.
+estimation using spaceborne synthetic aperture radar, IEEE Geosci. Remote Sens.
+[18] B. Kim, N. Yuvaraj, K. Sri Preethaa, R. Arun Pandian, Surface crack detection using
+Lett. 20 (2023) 1–5, https://doi.org/10.1109/LGRS.2023.3309944.
+deep learning with shallow CNN architecture for enhanced computation, Neural
+[3] R. Amhaz, S. Chambon, J. Idier, V. Baltazart, Automatic crack detection on two- Comput. & Applic. 33 (2021) 9289–9305, https://doi.org/10.1007/s00521-021-
+dimensional pavement images: an algorithm based on minimal path selection, IEEE
+05690-8.
+Trans. Intell. Transp. Syst. 17 (2016) 2718–2729, https://doi.org/10.1109/
+[19] K. He, X. Zhang, S. Ren, J. Sun, Deep residual learning for image recognition, in:
+TITS.2015.2477675.
+Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition
+[4] Z. Qu, S.-Q. Chen, Y.-Q. Liu, L. Liu, Linear seam elimination of tunnel crack images (CVPR), 2016, pp. 770–778, https://doi.org/10.1109/CVPR.2016.90.
+based on statistical specific pixels ratio and adaptive fragmented segmentation,
+[20] K. Simonyan, A. Zisserman, Very deep convolutional networks for large-scale
+IEEE Trans. Intell. Transp. Syst. 21 (2019) 3599–3607, https://doi.org/10.1109/
+image recognition, in: International Conference on Learning Representations
+[5] T M I . T Q S. u 2 i 0 n 1 ta 9 n .2 a 9 , 2 J 9 . 4 T 8 o 3 r . r es, J.M. Men´endez, A simplified computer vision system for (ICLR), 2015, pp. 1–14, https://doi.org/10.48550/arXiv.1409.1556.
+[21] A. Farhadi, J. Redmon, Yolov3: An incremental improvement, in: Proceedings of
+road surface inspection and maintenance, IEEE Trans. Intell. Transp. Syst. 17
+the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR),
+(2015) 608–619, https://doi.org/10.1109/TITS.2015.2482222. 2018, pp. 1–6, https://doi.org/10.48550/arXiv.1804.02767.
+[6] J.-M. Guo, H. Markoni, J.-D. Lee, Barnet: boundary aware refinement network for
+[22] S. Ren, K. He, R. Girshick, J. Sun, Faster r-cnn: towards real-time object detection
+crack detection, IEEE Trans. Intell. Transp. Syst. 23 (2021) 7343–7358, https://doi.
+with region proposal networks, IEEE Trans. Pattern Anal. Mach. Intell. 39 (2017)
+org/10.1109/TITS.2021.3069135. 1137–1149, https://doi.org/10.1109/TPAMI.2016.2577031.
+[23] L. Zhang, F. Yang, Y.D. Zhang, Y.J. Zhu, Road crack detection using deep
+convolutional neural network, in: IEEE International Conference on Image
+10
+--- Page 11 ---
+Y. Zhang and C. Liu A u t o m a t i o n in C o n s t r u c t i o n 162(2024)105375
+Processing (ICIP), IEEE, 2016, pp. 3708–3712, https://doi.org/10.1109/ [47] W. Wang, C. Su, Automatic concrete crack segmentation model based on
+ICIP.2016.7533052. transformer, Autom. Constr. 139 (2022) 104275, https://doi.org/10.1016/j.
+[24] K. Laxman, N. Tabassum, L. Ai, C. Cole, P. Ziehl, Automated crack detection and autcon.2022.104275.
+crack depth prediction for reinforced concrete structures using deep learning, [48] H. Liu, X. Miao, C. Mertz, C. Xu, H. Kong, Crackformer: transformer network for
+Constr. Build. Mater. 370 (2023) 130709, https://doi.org/10.1016/j. fine-grained crack detection, in: Proceedings of the IEEE/CVF International
+conbuildmat.2023.130709. Conference on Computer Vision (ICCV), 2021, pp. 3783–3792, https://doi.org/
+[25] K. Hacıefendiog˘lu, H.B. Bas¸ag˘a, Concrete road crack detection using deep learning- 10.1109/ICCV48922.2021.00376.
+based faster r-cnn method, Iran. J. Sci. Technol. Trans. Civil Eng. (2022) 1–13, [49] F. Guo, Y. Qian, J. Liu, H. Yu, Pavement crack detection based on transformer
+https://doi.org/10.1007/s40996-021-00671-2. network, Autom. Constr. 145 (2023) 104646, https://doi.org/10.1016/j.
+[26] V. Mandal, L. Uong, Y. Adu-Gyamfi, Automated road crack detection using deep autcon.2022.104646.
+convolutional neural networks, in: IEEE International Conference on Big Data (Big [50] H. Liu, J. Yang, X. Miao, C. Mertz, H. Kong, Crackformer network for pavement
+Data), IEEE, 2018, pp. 5212–5215, https://doi.org/10.1109/BigData crack segmentation, IEEE Trans. Intell. Transp. Syst. 24 (2023) 9240–9252,
+(2018.8622327). https://doi.org/10.1109/TITS.2023.3266776.
+[27] D. Ma, H. Fang, N. Wang, C. Zhang, J. Dong, H. Hu, Automatic detection and [51] Y. Liu, J. Chen, J. Hou, Learning position information from attention: end-to-end
+counting system for pavement cracks based on pcgan and yolo-mf, IEEE Trans. weakly supervised crack segmentation with gans, Comput. Ind. 149 (2023)
+Intell. Transp. Syst. 23 (2022) 22166–22178, https://doi.org/10.1109/ 103921, https://doi.org/10.1016/j.compind.2023.103921.
+TITS.2022.3161960. [52] W. Wang, C. Su, G. Han, H. Zhang, A lightweight crack segmentation network
+[28] K.-W. Tse, R. Pi, Y. Sun, C.-Y. Wen, Y. Feng, A novel real-time autonomous crack based on knowledge distillation, J. Build. Eng. 76 (2023) 107200, https://doi.org/
+inspection system based on unmanned aerial vehicles, Sensors 23 (2023) 3418, 10.1016/j.jobe.2023.107200.
+https://doi.org/10.3390/s23073418. [53] O. Ronneberger, P. Fischer, T. Brox, U-net: Convolutional networks for biomedical
+[29] J. Hu, L. Shen, G. Sun, Squeeze-and-excitation networks, in: Proceedings of the image segmentation, in: Medical Image Computing and Computer-Assisted
+IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2018, Intervention (MICCAI), Springer, 2015, pp. 234–241, https://doi.org/10.48550/
+pp. 7132–7141, https://doi.org/10.48550/arXiv.1709.01507. arXiv.1505.04597.
+[30] Y. Zhang, Z. Zuo, X. Xu, J. Wu, J. Zhu, H. Zhang, J. Wang, Y. Tian, Road damage [54] D. Ouyang, S. He, G. Zhang, M. Luo, H. Guo, J. Zhan, Z. Huang, Efficient multi-
+detection using UAV images based on multi-level attention mechanism, Autom. scale attention module with cross-spatial learning, in: IEEE International
+Constr. 144 (2022) 104613, https://doi.org/10.1016/j.autcon.2022.104613. Conference on Acoustics, Speech and Signal Processing (ICASSP), IEEE, 2023,
+[31] Y. Liu, F. Liu, W. Liu, Y. Huang, Pavement distress detection using street view pp. 1–5, https://doi.org/10.1109/ICASSP49357.2023.10096516.
+images captured via action camera, IEEE Trans. Intell. Transp. Syst. (2023), [55] X. Zhu, H. Hu, S. Lin, J. Dai, Deformable convnets v2: More deformable, better
+https://doi.org/10.1016/j.autcon.2021.103991. results, in: Proceedings of the IEEE/CVF Conference on Computer Vision and
+[32] Q.-L. Zhang, Y.-B. Yang, Sa-net: Shuffle attention for deep convolutional neural Pattern Recognition (CVPR), 2019, pp. 9308–9316, https://doi.org/10.1109/
+networks, in: IEEE International Conference on Acoustics, Speech and Signal CVPR.2019.00953.
+Processing (ICASSP), IEEE, 2021, pp. 2235–2239, https://doi.org/10.1109/ [56] H. Zhao, J. Shi, X. Qi, X. Wang, J. Jia, Pyramid scene parsing network, in:
+ICASSP39728.2021.9414568. Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition
+[33] X. Xiang, Z. Wang, Y. Qiao, An improved yolov5 crack detection method combined (CVPR), 2017, pp. 2881–2890, https://doi.org/10.1109/CVPR.2017.660.
+with transformer, IEEE Sensors J. 22 (2022) 14328–14335, https://doi.org/ [57] L.-C. Chen, Y. Zhu, G. Papandreou, F. Schroff, H. Adam, Encoder-decoder with
+10.1109/JSEN.2022.3181003. atrous separable convolution for semantic image segmentation, in: Proceedings of
+[34] X.-W. Ye, T. Jin, P.-Y. Chen, Structural crack detection using deep learning-based the European Conference on Computer Vision (ECCV), 2018, pp. 801–818, https://
+fully convolutional networks, Adv. Struct. Eng. 22 (2019) 3412–3419, https://doi. doi.org/10.1007/978-3-030-01234-2_49.
+org/10.1177/1369433219836292. [58] K. Sun, B. Xiao, D. Liu, J. Wang, Deep high-resolution representation learning for
+[35] Y. Du, S. Zhong, H. Fang, N. Wang, C. Liu, D. Wu, Y. Sun, M. Xiang, Modeling human pose estimation, in: Proceedings of the IEEE/CVF Conference on Computer
+automatic pavement crack object detection and pixel-level segmentation, Autom. Vision and Pattern Recognition (CVPR), 2019, pp. 5693–5703, https://doi.org/
+Constr. 150 (2023) 104840, https://doi.org/10.1016/j.autcon.2023.104840. 10.48550/arXiv.1902.09212.
+[36] O. Eid, M.A.A. El Ghany, Hardware implementation of yolov4-tiny for object [59] Q. Wang, B. Wu, P. Zhu, P. Li, W. Zuo, Q. Hu, Eca-net: efficient channel attention
+detection, in: International Conference on Microelectronics (ICM), 2021, for deep convolutional neural networks, in: Proceedings of the IEEE/CVF
+pp. 270–275, https://doi.org/10.1109/ICM52667.2021.9664943. Conference on Computer Vision and Pattern Recognition (CVPR), 2020,
+[37] J. Zhang, S. Qian, C. Tan, Automated bridge surface crack detection and pp. 11534–11542, https://doi.org/10.48550/arXiv.1910.03151.
+segmentation using computer vision-based deep learning model, Eng. Appl. Artif. [60] S. Woo, J. Park, J.-Y. Lee, I.S. Kweon, Cbam: Convolutional block attention
+Intell. 115 (2022) 105225, https://doi.org/10.1016/j.engappai.2022.105225. module, in: Proceedings of the European Conference on Computer Vision (ECCV),
+[38] G. Xu, Q. Yue, X. Liu, Deep learning algorithm for real-time automatic crack 2018, pp. 3–19, https://doi.org/10.1109/CVPR42600.2020.01155.
+detection, segmentation, qualification, Eng. Appl. Artif. Intell. 126 (2023) 107085, [61] J. Dai, H. Qi, Y. Xiong, Y. Li, G. Zhang, H. Hu, Y. Wei, Deformable convolutional
+https://doi.org/10.1016/j.engappai.2023.107085. networks, in: Proceedings of the IEEE International Conference on Computer Vision
+[39] X. Sun, Y. Xie, L. Jiang, Y. Cao, B. Liu, Dma-net: deeplab with multi-scale attention (ICCV), 2017, pp. 764–773, https://doi.org/10.48550/arXiv.1703.06211.
+for pavement crack segmentation, IEEE Trans. Intell. Transp. Syst. 23 (2022) [62] X. Li, X. Sun, Y. Meng, J. Liang, F. Wu, J. Li, Dice loss for data-imbalanced nlp
+18392–18403, https://doi.org/10.1109/TITS.2022.3158670. tasks, in: Proceedings of the 58th Annual Meeting of the Association for
+[40] Z. Al-Huda, B. Peng, R.N.A. Algburi, M.A. Al-antari, A.-J. Rabea, D. Zhai, A hybrid Computational Linguistics, 2020, pp. 465–476, https://doi.org/10.18653/v1/2020
+deep learning pavement crack semantic segmentation, Eng. Appl. Artif. Intell. 122 (acl-main.45).
+(2023) 106142, https://doi.org/10.1016/j.engappai.2023.106142. [63] Y. Liu, J. Yao, X. Lu, R. Xie, L. Li, Deepcrack: a deep hierarchical feature learning
+[41] B. Chen, H. Zhang, G. Wang, J. Huo, Y. Li, L. Li, Automatic concrete infrastructure architecture for crack segmentation, Neurocomputing 338 (2019) 139–153,
+crack semantic segmentation using deep learning, Autom. Constr. 152 (2023) https://doi.org/10.1016/j.neucom.2019.01.036.
+104950, https://doi.org/10.1016/j.autcon.2023. 104950. [64] M. Fan, S. Lai, J. Huang, X. Wei, Z. Chai, J. Luo, X. Wei, Rethinking bisenet for real-
+[42] T. Zhang, D. Wang, Y. Lu, Ecsnet: an accelerated real-time image segmentation time semantic segmentation, in: Proceedings of the IEEE/CVF Conference on
+CNN architecture for pavement crack detection, IEEE Trans. Intell. Transp. Syst. 24 Computer Vision and Pattern Recognition (CVPR), 2021, pp. 9716–9725, https://
+(2023) 1–8, https://doi.org/10.1109/TITS.2023.3300312. doi.org/10.48550/arXiv.2104.13188.
+[43] F. Yang, L. Zhang, S. Yu, D. Prokhorov, X. Mei, H. Ling, Feature pyramid and [65] S. Gupta, S. Shrivastwa, S. Kumar, A. Trivedi, Self-attention-based efficient u-net
+hierarchical boosting network for pavement crack detection, IEEE Trans. Intell. for crack segmentation, in: Computer Vision and Robotics: Proceedings of CVR
+Transp. Syst. 21 (2019) 1525–1535, https://doi.org/10.48550/arXiv.1901.06340. 2022, Springer, 2023, pp. 103–114, https://doi.org/10.1007/978-981-19-7892-0_
+[44] Y. Pan, G. Zhang, L. Zhang, A spatial-channel hierarchical deep learning network 9.
+for pixel-level automated crack detection, Autom. Constr. 119 (2020) 103357, [66] Y. Duan, Dual flow fusion model for concrete surface crack segmentation, arxiv
+https://doi.org/10.1016/j.autcon.2020.103357. (2023), https://doi.org/10.48550/arXiv.2305.05132.
+[45] Z. Qu, W. Chen, S.-Y. Wang, T.-M. Yi, L. Liu, A crack detection algorithm for [67] J. Zhong, J. Zhu, J. Huyan, T. Ma, W. Zhang, Multi-scale feature fusion network for
+concrete pavement based on attention mechanism and multi-features fusion, IEEE pixel-level pavement distress detection, Autom. Constr. 141 (2022) 104436,
+Trans. Intell. Transp. Syst. 23 (2021) 11710–11719, https://doi.org/10.1109/ https://doi.org/10.1016/j.autcon.2022.104436.
+TITS.2021.3106647. [68] H. Chen, H. Lin, An effective hybrid atrous convolutional network for pixel-level
+[46] Q. Mei, M. Gül, A cost effective solution for pavement crack inspection using crack detection, IEEE Trans. Instrum. Meas. 70 (2021) 1–12, https://doi.org/
+cameras and deep neural networks, Constr. Build. Mater. 256 (2020) 119397, 10.1109/TIM.2021.3075022.
+https://doi.org/10.1016/j.conbuildmat.2020.119397. [69] C. Liu, C. Zhu, X. Xia, J. Zhao, H. Long, FFEDN: feature fusion encoder decoder
+network for crack detection, IEEE Trans. Intell. Transp. Syst. 23 (2022)
+15546–15557, https://doi.org/10.1109/TITS. 2022.3141827.
+11
